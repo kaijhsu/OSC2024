@@ -11,10 +11,18 @@
 // [7:0] I/O data  
 
 #define AUX_MU_IER_REG  (PBASE+0x00215044)
+#define AUX_MU_IER_REG_TRANSMIT_INTERRUPT (1 << 1)
+#define AUX_MU_IER_REG_RECEIVE_INTERRUPT (1 << 0)
 // enable interrupts
 // [7:0] MS 9 bits
+// [1] enable transmit interrupts
+// [0] enable receive interrupts
 
 #define AUX_MU_IIR_REG  (PBASE+0x00215048)
+// BCM2835 p13
+#define AUX_MU_IIR_REG_READ (1 << 2)
+#define AUX_MU_IIR_REG_WRITE (1 << 1)
+
 // show interrupt status
 
 #define AUX_MU_LCR_REG  (PBASE+0x0021504C)

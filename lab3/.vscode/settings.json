@@ -4,6 +4,7 @@
         "shell.h": "c",
         "devicetree.h": "c",
         "utils.h": "c",
-        "exception.h": "c"
+        "exception.h": "c",
+        "timer.h": "c"
     }
 }

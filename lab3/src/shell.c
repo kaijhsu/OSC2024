@@ -1,17 +1,15 @@
 #include "shell.h"
 #include "exception.h"
+#include "time.h"
 
-int help(int argc, char *argv[]){
-    uart_printf(
-        "help:    print help menu\n"
-        "hello:   print Hello World!\n"
-        "board:   print board info\n"
-        "reboot:  reboot the device, usage: reboot <tick>\n"
-        "ls:      list directory\n"
-        "cat:     dump text in <filepath>\n"
-        );
-    return 0;
-}
+typedef struct cmd_t {
+    char *name;
+    char *description;
+    int  (* funct)(int, char **);
+} cmd_t;
+
+
+
 
 int hello(int argc, char *argv[]){
     uart_printf("Hello World! I'm main kernel!\n");
@@ -66,7 +64,7 @@ int exec(int argc, char *argv[]){
     char* pathname = argv[1];
     cpio_path path;
     if(cpio_get_start_addr(&path.next)){
-        debug("get start addr fail");
+        debug();
         return -1;
     }
     while(0 == cpio_parse(&path)){
@@ -112,6 +110,25 @@ int reboot(int argc, char *argv[]){
     return 0;
 }
 
+int help(int, char**);
+
+cmd_t cmds[] = {
+    {"help",    "print help menu",      help},
+    {"hello",   "print Hello World!",   hello},
+    {"board",   "print board info",     board_info},
+    {"reboot",  "reboot the device",    reboot},
+    {"ls",      "list directory",       ls},
+    {"cat",     "dump file text",       cat},
+    {"exec",    "execute file",         exec}
+};
+
+int help(int argc, char *argv[]){
+    for(int i=0; i<sizeof(cmds)/sizeof(cmds[0]); ++i)
+        uart_printf("%s\t\t%s\n", cmds[i].name, cmds[i].description);
+    return 0;
+}
+
+
 int shell_loop(){
     while (1) {	
 		char buf[256];
@@ -145,21 +162,15 @@ int shell_loop(){
 
         if(argc == 0)
             continue;
-        else if(0 == m_strcmp(argv[0], "help"))
-            help(argc, argv);
-        else if(0 == m_strcmp(argv[0], "hello"))
-            hello(argc,argv);
-        else if(0 == m_strcmp(argv[0], "board"))
-            board_info(argc, argv);
-        else if(0 == m_strcmp(argv[0], "reboot"))
-            reboot(argc, argv);
-        else if(0 == m_strcmp(argv[0], "ls"))
-            ls(argc, argv);
-        else if(0 == m_strcmp(argv[0], "cat"))
-            cat(argc, argv);
-        else if(0 == m_strcmp(argv[0], "exec"))
-            exec(argc, argv);
-        else
+        int valid = 0;
+        for(int i=0; i<sizeof(cmds)/sizeof(cmds[0]); ++i){
+            if(0 == m_strcmp(argv[0], cmds[i].name)){
+                cmds[i].funct(argc, argv);
+                valid = 1;
+                break;
+            }
+        }
+        if(!valid)
             uart_printf("Unknown command: %s\n", argv[0]);
 	}
     return 0;

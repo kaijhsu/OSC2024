@@ -157,12 +157,31 @@ el2_to_el1:
 - How to start executing the user code?
   - Create a shell command to load program
 
-### EL0 to EL1
+### `LAB3-3` EL0 to EL1
+- When EL0 call `svc`, the cpu look exception vector table to execute handler
+  - build exception vector table
+    - the table should align to `0x800`, we use `.align 11` to align to $2^11 == 0x800 = 2048$
 ## Exception Handling
+- implement exception handler
+
 ### Context saving
+- do context saving and restoring
+
 ## Interrupt
-### Core Timer Interrupt
+### `LAB3-4` Core Timer Interrupt
+- How to configure rpi3 CPU core timer?
+  - `cntpct_el0` timer current count
+  - `cntp_cval_el0` interrupt the cpu if `cntpct_el0 >= cntp_cval_el0`
+  - `cntp_tval_el0`: (`cntp_cval_el0 - cntpct_el0`) expired timer
+- To enable timer we need set `cntp_ctl_el0` to 1
+- unmask the timer interrupt from the first level interrupt controller
+- enable the CPU core's interrupt
+- How to get `cpu_time`?
+  - get frenquency and cycles by `cntpct_el0` `cntfrq_el0`
+ 
 ## Rpi3 Peripheral interrupt
+- [Interrupte Manual p109](https://cs140e.sergio.bz/docs/BCM2837-ARM-Peripherals.pdf)
+- 
 
 
 

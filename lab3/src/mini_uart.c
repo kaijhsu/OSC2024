@@ -1,7 +1,9 @@
 #include "peripherals/mini_uart.h"
 #include "peripherals/gpio.h"
+#include "peripherals/irq.h"
 #include "utils.h"
 #include "m_string.h"
+#include "mini_uart.h"
 
 void uart_send(char c) {
     
@@ -105,3 +107,113 @@ void uart_printf(char* fmt, ...){
     char *s = str;
     while (*s) uart_send(*s++);
 }
+
+/*------------------ ASYNC -------------------*/
+#define BUFFER_SIZE 256
+char read_buffer[BUFFER_SIZE];
+char write_buffer[BUFFER_SIZE];
+int read_st = 0;
+int read_ed = 0;
+int write_st = 0;
+int write_ed = 0;
+
+int uart_async_readline(char* target, int len){
+    int i;
+    len -= 1;
+    target[len] = '\0';
+    for (i = 0; i < len; i++){
+        while (read_st == read_ed)
+            asm volatile("nop");   
+        char c = read_buffer[read_st++];
+        read_st %= BUFFER_SIZE;
+        if (c == '\r' || c == '\n'){
+            target[i] = '\0';
+            break;
+        } else{
+            target[i] = c;
+        }
+    }
+    target[i] = '\0';
+    return i;
+}
+
+int uart_async_send_string(char* str) {
+	if(m_strlen(str) >= BUFFER_SIZE-1)
+        return 0;
+	for(int i = 0; str[i] != '\0'; i++){
+		if (str[i] == '\n') {
+			write_buffer[write_ed++] = '\r';
+			write_ed %= BUFFER_SIZE;
+			write_buffer[write_ed++] = '\n';
+			write_ed %= BUFFER_SIZE;
+		} else {
+			write_buffer[write_ed++] = str[i];
+			write_ed %= BUFFER_SIZE;
+		}
+	}
+	uart_set_transmit_interrupt(1);
+	return 1;
+}
+
+void uart_set_transmit_interrupt(int enable){
+    unsigned reg = get32(AUX_MU_IER_REG);
+    // bcm2837 p12, enable transmit INTERRUPT 
+    reg &= ~(AUX_MU_IER_REG_TRANSMIT_INTERRUPT);
+    if(enable) reg |= AUX_MU_IER_REG_TRANSMIT_INTERRUPT;
+    put32(AUX_MU_IER_REG, reg);
+}
+
+void uart_set_receive_interrupt(int enable){
+    unsigned reg = get32(AUX_MU_IER_REG);
+    // bcm2837 p12, enable receive INTERRUPT 
+    reg &= ~(AUX_MU_IER_REG_RECEIVE_INTERRUPT); 
+    if(enable) reg |= AUX_MU_IER_REG_RECEIVE_INTERRUPT;
+    put32(AUX_MU_IER_REG, reg);
+}
+
+void uart_set_aux_interrupt(int enable){
+    // bcm2837 p116, enable aux interrupt
+    unsigned int reg = get32(ENABLE_IRQS_1);
+    reg &= ~(AUX_INT);
+    if(enable) reg |= AUX_INT;
+    put32(ENABLE_IRQS_1, reg);
+}
+
+
+void demo_uart_async(void){
+    uart_set_receive_interrupt(1);
+    uart_set_aux_interrupt(1);
+    char buffer[BUFFER_SIZE];
+    while(1){
+        uart_async_send_string("Async > ");
+		uart_async_readline(buffer, BUFFER_SIZE);
+		uart_async_send_string("[Async recv] ");
+		uart_async_send_string(buffer);
+		uart_async_send_string("\r\n\r\n");
+    }
+    uart_set_aux_interrupt(0);
+    uart_set_receive_interrupt(0);
+    return ;
+}
+
+void uart_irq_handler(){
+    uart_set_aux_interrupt(0);
+    
+    unsigned int irq_src = get32(AUX_MU_IIR_REG);
+    if(irq_src & AUX_MU_IIR_REG_WRITE){
+        while (write_st != write_ed) {
+		    uart_send(write_buffer[write_st++]);
+		    write_st %= BUFFER_SIZE;
+        }
+        uart_set_transmit_interrupt(0);
+    }
+    else if(irq_src & AUX_MU_IIR_REG_READ){
+        char c = uart_recv();
+        read_buffer[read_ed++] = c;
+        read_ed %= BUFFER_SIZE;
+        uart_send(c);
+    }    
+    uart_set_aux_interrupt(1);
+}
+
+

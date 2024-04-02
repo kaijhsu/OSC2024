@@ -27,4 +27,7 @@
 #define CPACR_EL1_FPEN      (0b11 << 20)
 #define CPACR_EL1_VALUE     (CPACR_EL1_FPEN)
 
+// Timer Related 
+#define CORE0_TIMER_IRQ_CTRL 0x40000040
+
 #endif

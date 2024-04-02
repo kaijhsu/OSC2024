@@ -10,8 +10,8 @@
 
 #define KERNEL_START_ADDR   (char*)0x80000
 #define HEAP_MAX            (char*)0x100000
-#define USER_PROCESS_ADDR   (char*)0x120000
-#define USER_PROCESS_SP     (char*)0x140000
+#define USER_PROCESS_ADDR   (char*)0x800000
+#define USER_PROCESS_SP     (char*)0x900000
 #define LOW_MEMORY          (2 * SECTION_SIZE)
 
 

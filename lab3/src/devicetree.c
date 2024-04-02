@@ -39,6 +39,7 @@ int fdt_traverse(int (*fdt_callback)(char *, char *, char *, unsigned int)){
 
         unsigned int token = read_bigendian((unsigned int*) ptr);
         ptr += 4;
+        
         if(token == FDT_BEGIN_NODE){
             nodename = ptr;
             ptr = fdt_align(ptr, m_strlen(nodename) + 1);
@@ -60,6 +61,7 @@ int fdt_traverse(int (*fdt_callback)(char *, char *, char *, unsigned int)){
             break;
         else {
             uart_printf("%s:%d Device Tree: Unknown tag.\n", __FILE__, __LINE__);
+            break;
         }
     }
     return 0;
