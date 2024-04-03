@@ -1,6 +1,8 @@
 #include "shell.h"
 #include "exception.h"
-#include "time.h"
+#include "timer.h"
+#include "m_string.h"
+#include "mm.h"
 
 typedef struct cmd_t {
     char *name;
@@ -110,6 +112,27 @@ int reboot(int argc, char *argv[]){
     return 0;
 }
 
+void timeout_cb(void *arg){
+    char *mesg = (char *)arg;
+    uart_printf("\n[TIMEOUT] Mesg: %s, Sec: %d\n", mesg, get_cpu_time());
+}
+
+int set_timeout(int argc, char *argv[]){
+    if(argc != 3){
+        uart_printf("Usage: %s <Mesg> <Second>\n");
+        return -1;
+    }
+    unsigned long long sec = m_atoi(argv[2]);
+    char *mesg = simple_malloc(m_strlen(argv[1])+1);
+    m_sprintf(mesg, "%s\0", argv[1]);
+    if(timer_add(sec, timeout_cb, mesg)){
+        debug(); // add timer fail;
+        return -1;
+    }
+    uart_printf("\n[ADD TIMEOUT] Time: %d Mesg: %s, Sec: %d\n", get_cpu_time(), mesg, sec);
+    return 0;
+}
+
 int help(int, char**);
 
 cmd_t cmds[] = {
@@ -119,7 +142,8 @@ cmd_t cmds[] = {
     {"reboot",  "reboot the device",    reboot},
     {"ls",      "list directory",       ls},
     {"cat",     "dump file text",       cat},
-    {"exec",    "execute file",         exec}
+    {"exec",    "execute file",         exec},
+    {"timeout", "set timeout",          set_timeout}
 };
 
 int help(int argc, char *argv[]){

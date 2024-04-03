@@ -89,34 +89,49 @@ b	\label
 .endm
 
 // LAB3-3
-irq_handler_wrapper irq_handler_default     irq_default
-irq_handler_wrapper irq_handler_irq_64_el0  irq_64_el0
-irq_handler_wrapper irq_handler_irq_64_el1  irq_64_el1
-irq_handler_wrapper irq_handler_system_call irq_system_call
+irq_handler_wrapper entry_el_spel0_sync    el_spel0_sync
+irq_handler_wrapper entry_el_spel0_irq     el_spel0_irq
+irq_handler_wrapper entry_el_spel0_fiq     el_spel0_fiq
+irq_handler_wrapper entry_el_spel0_error   el_spel0_error
+
+irq_handler_wrapper entry_el_spelx_sync    el_spelx_sync
+irq_handler_wrapper entry_el_spelx_irq     el_spelx_irq
+irq_handler_wrapper entry_el_spelx_fiq     el_spelx_fiq
+irq_handler_wrapper entry_el_spelx_error   el_spelx_error
+
+irq_handler_wrapper entry_elh_64_sync      elh_64_sync
+irq_handler_wrapper entry_elh_64_irq       elh_64_irq
+irq_handler_wrapper entry_elh_64_fiq       elh_64_fiq
+irq_handler_wrapper entry_elh_64_error     elh_64_error
+
+irq_handler_wrapper entry_elh_32_sync      elh_32_sync
+irq_handler_wrapper entry_elh_32_irq       elh_32_irq
+irq_handler_wrapper entry_elh_32_fiq       elh_32_fiq
+irq_handler_wrapper entry_elh_32_error     elh_32_error
 
 .align 11 // align to 0x800
 .globl exception_vector_table
 exception_vector_table:
     // el not change, using sp_el0
-    ventry      irq_handler_default       // synchronos exception
-    ventry      irq_handler_default       // IRQ and vIRQ exception
-    ventry      irq_handler_default       // FIQ and vFIQ exception
-    ventry      irq_handler_default       // SError and vSError
+    ventry      entry_el_spel0_sync             // synchronos exception
+    ventry      entry_el_spel0_irq              // IRQ and vIRQ exception
+    ventry      entry_el_spel0_fiq              // FIQ and vFIQ exception
+    ventry      entry_el_spel0_error            // SError and vSError
     // el not change, using sp_elx
-    ventry      irq_handler_default       // synchronos exception
-    ventry      irq_handler_irq_64_el1   // IRQ and vIRQ exception
-    ventry      irq_handler_default       // FIQ and vFIQ exception
-    ventry      irq_handler_default       // SError and vSError
+    ventry      entry_el_spelx_sync             // synchronos exception
+    ventry      entry_el_spelx_irq              // IRQ and vIRQ exception
+    ventry      entry_el_spelx_fiq              // FIQ and vFIQ exception
+    ventry      entry_el_spelx_error            // SError and vSError
     // Moves to a higher el, from aarch64
-    ventry      irq_handler_system_call   // synchronos exception
-    ventry      irq_handler_irq_64_el0    // IRQ and vIRQ exception
-    ventry      irq_handler_default       // FIQ and vFIQ exception
-    ventry      irq_handler_default       // SError and vSError
+    ventry      entry_elh_64_sync               // synchronos exception
+    ventry      entry_elh_64_irq                // IRQ and vIRQ exception
+    ventry      entry_elh_64_fiq                // FIQ and vFIQ exception
+    ventry      entry_elh_64_error              // SError and vSError
     // Moves to a higher el, from aarch32
-    ventry      irq_handler_default       // synchronos exception
-    ventry      irq_handler_default       // IRQ and vIRQ exception
-    ventry      irq_handler_default       // FIQ and vFIQ exception
-    ventry      irq_handler_default       // SError and vSError
+    ventry      entry_elh_32_sync               // synchronos exception
+    ventry      entry_elh_32_irq                // IRQ and vIRQ exception
+    ventry      entry_elh_32_fiq                // FIQ and vFIQ exception
+    ventry      entry_elh_32_error              // SError and vSError
 
 .globl set_exception_vector_table
 set_exception_vector_table:

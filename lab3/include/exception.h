@@ -9,9 +9,6 @@ extern void branch_el1_to_el0(char *addr, char *sp);
 extern void set_exception_vector_table();
 
 void set_interrupt_el1(int enable);
-void irq_default();
-void irq_64_el0();
-void irq_64_el1();
-void irq_system_call();
+
 
 #endif

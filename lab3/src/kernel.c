@@ -10,11 +10,9 @@ void kernel_main(fdt_header *devicetree_ptr) {
 	set_devicetree_addr(devicetree_ptr);
 	set_exception_vector_table();
 	uart_init();
-	
-	enable_core_timer();
+	timer_init();
+	timer_add(2, print_cpu_time, 0);
 	set_interrupt_el1(1);
-	// set_timer(2);
 	uart_printf("\nHello World!\n");	
-	demo_uart_async();
 	shell_loop();
 }

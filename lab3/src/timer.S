@@ -5,16 +5,20 @@
 get_cpu_cycles:
     mrs x0, cntpct_el0
     ret
+.globl set_cpu_cycles
+set_cpu_cycles:
+    msr cntpct_el0, x0
+    ret
 
 .globl get_cpu_frequency
 get_cpu_frequency:
     mrs x0, cntfrq_el0
     ret
-
 .globl set_timer_expired
 set_timer_expired:
     msr cntp_tval_el0, x0
     ret
+
 .globl set_timer_limit
 set_timer_limit:
     msr cntp_cval_el0, x0
