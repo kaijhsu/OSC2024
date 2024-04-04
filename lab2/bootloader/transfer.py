@@ -33,12 +33,12 @@ def main():
     port.write(b'help\n')
     text = port.read_until(b'$ ').decode(encoding='ascii')
 
+    start_time = time.time()
     for i in range(0, len(bytecodes), 4):
         while True:
             addr = hex(int("0x80000", 16)+i)
             value = bytecodes[i:i+4][::-1].hex() 
-            print(f"{addr} {value: <8} {i: >6}/{len(bytecodes)}", end="")
-            port.write(f'write {addr} {value}\n'.encode('ascii'))
+            port.write(f'w {addr} {value}\n'.encode('ascii'))
             port.flush()
             text = port.read_until(b'$ ').decode(encoding='ascii')
             text = text.split("\n")[0].split(" ")
@@ -46,11 +46,17 @@ def main():
             ret_value = text[2]
             left_icons = round(10*i/len(bytecodes))
             right_icons = 10 - left_icons
-            print(f" progress: {'🌌'*left_icons}{'🌠' if right_icons > 0 else '🌟'}{'⬛'*right_icons}", end="\n")
-            print('\033[F', end="")
+            
+
+            if i % 100 == 0:
+                print(f"{addr} {value: <8} {i: >6}/{len(bytecodes)}", end="")
+                print(f" progress: {'🌌'*left_icons}{'🌠' if right_icons > 0 else '🌟'}{'⬛'*right_icons}", end="\n")
+                print('\033[F', end="")
             if ret_addr == addr and ret_value == value:
                 break
-    print("\nfinish!")
+            print("Error")
+
+    print(f"\nFinish after {time.time() - start_time} sec!")
     port.write(f'jump 0x80000\n'.encode('ascii'))
     port.flush()
         

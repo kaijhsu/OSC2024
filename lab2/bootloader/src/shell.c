@@ -15,7 +15,7 @@ int hello(int argc, char *argv[]){
 
 int read(int argc, char *argv[]){
     if(argc < 2){
-        uart_printf("Usage: read <hex addr>\n");
+        uart_printf("Usage: r <hex addr>\n");
         return -1;
     }
     char *addr = (void *)(long)m_htoi(argv[1]); // addr = 0x80000, *addr = value in 0x80000;
@@ -28,7 +28,7 @@ int read(int argc, char *argv[]){
 
 int write(int argc, char *argv[]){
     if(argc < 3){
-        uart_printf("Usage: write <addr> <value>");
+        uart_printf("Usage: w <addr> <value>");
         return -1;
     }
     int *addr = (void *)(long)m_htoi(argv[1]);
@@ -92,9 +92,9 @@ int shell_loop(){
         if(argc){
             if(0 == m_strcmp(argv[0], "hello"))
                 hello(argc, argv);
-            else if(0 == m_strcmp(argv[0], "write"))
+            else if(0 == m_strcmp(argv[0], "w"))
                 write(argc, argv);
-            else if(0 == m_strcmp(argv[0], "read"))
+            else if(0 == m_strcmp(argv[0], "r"))
                 read(argc, argv);
             else if(0 == m_strcmp(argv[0], "jump"))
                 jump(argc, argv);
@@ -103,9 +103,9 @@ int shell_loop(){
             else if(0 == m_strcmp(argv[0], "help"))
                 uart_printf("help:  print help menu\n"
                             "hello: print Hello World!\n"
-                            "write: write <addr> <value>\n"
+                            "w: write <addr> <value>\n"
                             "jump:  jump to <addr>\n"
-                            "read: read <addr>\n");
+                            "r: read <addr>\n");
             else
                 uart_printf("Unknown command: %s\n", argv[0]);
         }   

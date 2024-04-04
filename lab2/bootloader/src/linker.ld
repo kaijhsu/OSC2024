@@ -1,12 +1,12 @@
 /*
 *   Memory structure
-*   |    stack    |
-*   |      v      |
+*   |    stack    | 
+*   |      v      | 
 *   |      ^      |
 *   |    heap     |
 *   |    bss      | unintialized static data, filled with 0
 *   |    data     | initailized variable
-*   |    text     | code
+*   |    text     | code 0x80000
 */
 
 SECTIONS
@@ -36,3 +36,4 @@ SECTIONS
     _end = .;
 }
 _bootloader = 0x60000;
+

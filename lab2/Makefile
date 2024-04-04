@@ -83,3 +83,9 @@ dump: all
 close:
 	tmux kill-session -t $(SESSION)
 
+
+.PHONY: deploy
+deploy:
+	python3 ../lab2/bootloader/transfer.py -f kernel8.img -p /dev/ttyUSB0
+	screen /dev/ttyUSB0 115200
+
