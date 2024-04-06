@@ -181,7 +181,24 @@ el2_to_el1:
  
 ## Rpi3 Peripheral interrupt
 - [Interrupte Manual p109](https://cs140e.sergio.bz/docs/BCM2837-ARM-Peripherals.pdf)
-- 
 
+
+## Concurrent IRQ Handling
+- Goal
+  - Prioritized execution for critical handler
+- Why
+  - Less critical IRQ might block More critical IRQ
+- How
+  - decouple interrupt handler
+  - Task queue
+    - 當一個特定來源 A 的 Interrupt 抵達
+    - 關閉此來源 A 的 Interrupt ( mask the device's interrupt )
+    - 搬運 buffer 資料 (DMA/COPY)
+    - 開啟其他的 Interrupt 並繼續執行 IRQ 搬移資料後的工作
+    - 工作完成後，重新開啟此來源 A 的 Interrupt
+- `lab3-6-2` Nested Interrupt
+  -  beside save general register, also save `spsr_el1` `elr_el1`
+- Preemption
+  - 
 
 

@@ -26,13 +26,17 @@ set_timer_limit:
 
 
 
-.globl enable_core_timer
-enable_core_timer:
+.globl set_core_timer
+set_core_timer:
+    cbz x0, disable_core_timer 
     mov x0, 1
     msr cntp_ctl_el0, x0
-    mrs x0, cntfrq_el0
-    msr cntp_tval_el0, x0 // set expreied time
     mov x0, 2
     ldr x1, =CORE0_TIMER_IRQ_CTRL
     str w0, [x1] // unmask timer interrupt
+    ret
+disable_core_timer:
+    mov x2, 0
+    ldr x1, =CORE0_TIMER_IRQ_CTRL
+    str w2, [x1]
     ret

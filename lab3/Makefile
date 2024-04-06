@@ -64,7 +64,7 @@ debug:
 	make close || echo "closed."
 	tmux new-session -d -s $(SESSION)
 	tmux rename-window -t $(SESSION):0 'Main'
-	tmux split-window -v -p 20 -t $(SESSION):Main
+	tmux split-window -v -p 5 -t $(SESSION):Main
 	tmux send-keys -t $(SESSION):Main $(QEMU_CMD) C-m
 	tmux select-pane -t $(SESSION):Main -U
 	tmux send-keys -t $(SESSION):Main $(GDB_CMD) C-m

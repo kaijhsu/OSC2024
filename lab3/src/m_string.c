@@ -129,6 +129,13 @@ unsigned int m_vsprintf(char *dst, char *fmt, __builtin_va_list args) {
                     *dst++ = *p++;
                 }
             }
+            else if (*fmt == 'l'){
+                unsigned long long arg = __builtin_va_arg(args, unsigned long long);
+                for(int i=60; i>=0; i-=4){
+                    int hex = (arg >> i) & 0xF;
+                    *dst++ = (hex > 9)? 'A' - 10 + hex: '0' + hex;
+                }
+            }
             else if (*fmt == 'x'){
                 unsigned int arg = __builtin_va_arg(args, unsigned int);
                 for(int i=28; i>=0; i-=4){

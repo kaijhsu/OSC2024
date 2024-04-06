@@ -66,7 +66,7 @@ int exec(int argc, char *argv[]){
     char* pathname = argv[1];
     cpio_path path;
     if(cpio_get_start_addr(&path.next)){
-        debug();
+        debug("");
         return -1;
     }
     while(0 == cpio_parse(&path)){
@@ -119,17 +119,22 @@ void timeout_cb(void *arg){
 
 int set_timeout(int argc, char *argv[]){
     if(argc != 3){
-        uart_printf("Usage: %s <Mesg> <Second>\n");
+        uart_printf("Usage: %s <Mesg> <Second>\n", argv[0]);
         return -1;
     }
     unsigned long long sec = m_atoi(argv[2]);
     char *mesg = simple_malloc(m_strlen(argv[1])+1);
     m_sprintf(mesg, "%s\0", argv[1]);
     if(timer_add(sec, timeout_cb, mesg)){
-        debug(); // add timer fail;
+        debug(""); // add timer fail;
         return -1;
     }
     uart_printf("\n[ADD TIMEOUT] Time: %d Mesg: %s, Sec: %d\n", get_cpu_time(), mesg, sec);
+    return 0;
+}
+
+int demo_async(int argc, char **argv){
+    demo_uart_async();
     return 0;
 }
 
@@ -143,6 +148,7 @@ cmd_t cmds[] = {
     {"ls",      "list directory",       ls},
     {"cat",     "dump file text",       cat},
     {"exec",    "execute file",         exec},
+    {"demo_async","demo async uart",    demo_async},
     {"timeout", "set timeout",          set_timeout}
 };
 

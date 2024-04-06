@@ -5,6 +5,7 @@
 #include "m_string.h"
 #include "mini_uart.h"
 
+
 void uart_send(char c) {
     
     while (1) {
@@ -73,7 +74,7 @@ void uart_init(void) {
     put32(GPPUDCLK0, 0);
 
     // Enable mini uart (this also enables access to its registers)
-    put32(AUX_ENABLES, 1);
+    put32(AUX_ENABLES, 1); //If this bit is set the interrupt line is asserted whenever
 
     // Disable auto flow control and disable receiver and transmitter (for now)
     put32(AUX_MU_CNTL_REG, 0);
@@ -90,8 +91,8 @@ void uart_init(void) {
     // Set baud rate to 115200
     put32(AUX_MU_BAUD_REG, 270);
 
-    // No FIFO
-    put32(AUX_MU_IIR_REG, 6);
+
+    put32(AUX_MU_IIR_REG, 0);
 
     // Finally, enable transmitter and receiver
     put32(AUX_MU_CNTL_REG, 3);
@@ -123,10 +124,11 @@ int uart_async_readline(char* target, int len){
     target[len] = '\0';
     for (i = 0; i < len; i++){
         while (read_st == read_ed)
-            asm volatile("nop");   
+            asm volatile("nop");
+   
         char c = read_buffer[read_st++];
         read_st %= BUFFER_SIZE;
-        if (c == '\r' || c == '\n'){
+        if (c == '\n'){
             target[i] = '\0';
             break;
         } else{
@@ -184,36 +186,33 @@ void demo_uart_async(void){
     uart_set_receive_interrupt(1);
     uart_set_aux_interrupt(1);
     char buffer[BUFFER_SIZE];
-    while(1){
+    for(int i=0; i<3; ++i){
         uart_async_send_string("Async > ");
 		uart_async_readline(buffer, BUFFER_SIZE);
 		uart_async_send_string("[Async recv] ");
 		uart_async_send_string(buffer);
-		uart_async_send_string("\r\n\r\n");
+		uart_async_send_string("\r\n");
     }
     uart_set_aux_interrupt(0);
     uart_set_receive_interrupt(0);
     return ;
 }
 
-void uart_irq_handler(){
-    uart_set_aux_interrupt(0);
-    
-    unsigned int irq_src = get32(AUX_MU_IIR_REG);
-    if(irq_src & AUX_MU_IIR_REG_WRITE){
-        while (write_st != write_ed) {
-		    uart_send(write_buffer[write_st++]);
-		    write_st %= BUFFER_SIZE;
-        }
-        uart_set_transmit_interrupt(0);
+void uart_irq_write(){
+    while (write_st != write_ed) {
+        uart_send(write_buffer[write_st++]);
+        write_st %= BUFFER_SIZE;
     }
-    else if(irq_src & AUX_MU_IIR_REG_READ){
-        char c = uart_recv();
-        read_buffer[read_ed++] = c;
-        read_ed %= BUFFER_SIZE;
-        uart_send(c);
-    }    
-    uart_set_aux_interrupt(1);
+    uart_set_transmit_interrupt(0);
 }
+
+void uart_irq_read(){
+    char c = uart_recv();
+    read_buffer[read_ed++] = c;
+    read_ed %= BUFFER_SIZE;
+    uart_send(c);
+    *(unsigned int *)AUX_MU_IER_REG |= (AUX_MU_IER_REG_RECEIVE_INTERRUPT);
+}
+
 
 

@@ -3,10 +3,10 @@
 
 extern unsigned long long get_cpu_cycles();
 extern unsigned long long get_cpu_frequency();
-extern void enable_core_timer();
-extern void set_timer_expired(unsigned long cycles);
-extern void set_timer_limit(unsigned long cycles);
-extern void set_cpu_cycles(unsigned long cycles);
+extern void set_core_timer(int enable);
+extern void set_timer_expired(unsigned long long cycles);
+extern void set_timer_limit(unsigned long long cycles);
+extern void set_cpu_cycles(unsigned long long cycles);
 
 unsigned long long get_cpu_time();
 void print_cpu_time();

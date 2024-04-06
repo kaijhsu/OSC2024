@@ -9,11 +9,11 @@ typedef struct timer_t {
 } timer;
 
 // Define how frequent timer happens in a second
-#define TIMER_FREQUENCY 20
+#define TIMER_FREQUENCY 2
 unsigned long long timer_period_cnt = 0;
 unsigned long long timer_period     = 0;
 
-#define TIMER_POOL_SIZE 32
+#define TIMER_POOL_SIZE 8
 timer timer_pool[TIMER_POOL_SIZE];
 timer* timer_st = 0;
 
@@ -23,6 +23,13 @@ unsigned long long get_cpu_time(){
 
 void print_cpu_time(){
     uart_printf("CPU Time: %d sec\n", get_cpu_time());
+}
+
+void timer_init(){
+    timer_period_cnt = 0;
+    timer_period = get_cpu_frequency()/TIMER_FREQUENCY;
+    set_core_timer(1);
+    set_timer_expired(timer_period);
 }
 
 void timer_handler(){
@@ -35,14 +42,8 @@ void timer_handler(){
         timer_st = timer_st->next;
     }
     set_timer_expired(timer_period);
+    set_core_timer(1);
     return;
-}
-
-void timer_init(){
-    timer_period_cnt = 0;
-    timer_period = get_cpu_frequency()/TIMER_FREQUENCY;
-    enable_core_timer();
-    set_timer_expired(timer_period);
 }
 
 int timer_add(unsigned long sec, void (* callback)(void *), void* arg){
@@ -58,7 +59,7 @@ int timer_add(unsigned long sec, void (* callback)(void *), void* arg){
         }
     }
     if(t == 0){
-        debug(); // timer_pool is full
+        debug("timer_pool is full"); // timer_pool is full
         return -1;
     }
 
@@ -91,6 +92,6 @@ int timer_add(unsigned long sec, void (* callback)(void *), void* arg){
         }
         head = head->next;
     }
-    debug(); // never go here
+    debug("Timer unexpected!"); // never go here
     return -1;
 }

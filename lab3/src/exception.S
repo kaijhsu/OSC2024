@@ -38,7 +38,7 @@ b	\label
 
 // save general registers to stack
 .macro save_all
-    sub sp, sp, 32 * 8
+    sub sp, sp, 32 * 9
     stp x0, x1, [sp ,16 * 0]
     stp x2, x3, [sp ,16 * 1]
     stp x4, x5, [sp ,16 * 2]
@@ -55,6 +55,12 @@ b	\label
     stp x26, x27, [sp ,16 * 13]
     stp x28, x29, [sp ,16 * 14]
     str x30, [sp, 16 * 15]
+    // lab3-6-2 enable nested interrupt
+    mrs x0, spsr_el1
+    mrs x1, elr_el1
+    str x0, [sp, 16 * 16]
+    str x1, [sp, 16 * 17]
+    ldp x0, x1, [sp, 16 * 0]
 .endm
 
 // load general registers from stack
@@ -75,7 +81,14 @@ b	\label
     ldp x26, x27, [sp ,16 * 13]
     ldp x28, x29, [sp ,16 * 14]
     ldr x30, [sp, 16 * 15]
-    add sp, sp, 32 * 8
+
+    // lab3-6-2 enable nested interrupt
+    ldr x0, [sp ,16 * 16]
+    ldr x1, [sp, 16 * 17]
+    msr spsr_el1, x0
+    msr elr_el1, x1
+    ldp x0, x1, [sp ,16 * 0]
+    add sp, sp, 32 * 9
 .endm
 
 

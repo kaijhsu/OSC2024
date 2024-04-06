@@ -6,7 +6,7 @@ char* __heap_ptr = (char *)&_end;
 
 void* simple_malloc(unsigned int bytes){
     if(__heap_ptr + bytes >= HEAP_MAX){
-        debug();
+        debug("heap buffer overflow");
         return (void *)0;
     }
     void *ret = __heap_ptr;
