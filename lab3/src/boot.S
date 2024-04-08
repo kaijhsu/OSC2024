@@ -22,6 +22,6 @@ master:
     sub    x1, x1, x0
     bl     memzero
     mov    sp, #LOW_MEMORY
-    // x3 stores devicetree addr
+    // x29 stores devicetree addr
     mov    x0, x29
     bl     kernel_main

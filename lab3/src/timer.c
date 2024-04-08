@@ -9,7 +9,7 @@ typedef struct timer_t {
 } timer;
 
 // Define how frequent timer happens in a second
-#define TIMER_FREQUENCY 2
+#define TIMER_FREQUENCY 60
 unsigned long long timer_period_cnt = 0;
 unsigned long long timer_period     = 0;
 

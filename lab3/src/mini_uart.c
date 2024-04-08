@@ -92,7 +92,7 @@ void uart_init(void) {
     put32(AUX_MU_BAUD_REG, 270);
 
 
-    put32(AUX_MU_IIR_REG, 0);
+    put32(AUX_MU_IIR_REG, 6);
 
     // Finally, enable transmitter and receiver
     put32(AUX_MU_CNTL_REG, 3);
@@ -110,7 +110,7 @@ void uart_printf(char* fmt, ...){
 }
 
 /*------------------ ASYNC -------------------*/
-#define BUFFER_SIZE 256
+#define BUFFER_SIZE 32
 char read_buffer[BUFFER_SIZE];
 char write_buffer[BUFFER_SIZE];
 int read_st = 0;

@@ -3,7 +3,7 @@
 
 // #define debug() asm("nop");
 #define debug(fmt, ...) \
-    uart_printf("\n[DEBUG] %s:%d, %s: "fmt"\n\n", __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+    uart_printf("\n[DEBUG] %s:%d, %s: "fmt"\n", __FILE__, __LINE__, __func__, ##__VA_ARGS__)
 
 void uart_init ( void );
 char uart_recv ( void );

@@ -107,11 +107,13 @@ void set_interrupt_el1(int enable){
 void el_spelx_irq(){
     set_interrupt_el1(0);
     unsigned long long irq = *(unsigned long long *)CORE0_IRQ_SRC;
-    if(irq == SYSTEM_TIMER_IRQ_1){
+    if(irq & SYSTEM_TIMER_IRQ_1){
         set_core_timer(0);
         task_create(timer_handler, TIMER_PRIO);
+        irq &= ~SYSTEM_TIMER_IRQ_1;
     }
-    else if(irq == GPU_IRQ){
+
+    if(irq & GPU_IRQ){
         unsigned int pending = get32(IRQ_PENDING_1);
         if(pending & AUX_INT){
             unsigned int irq_src = get32(AUX_MU_IIR_REG);
@@ -127,10 +129,12 @@ void el_spelx_irq(){
         else{
             debug("unknown gpu irq pending %l", pending);
         }
+        irq &= ~GPU_IRQ;
     }
-    else{
-        debug("unknown irq %d", irq);
-    }
+
+    *(unsigned long long *)CORE0_IRQ_SRC = 0;
+    if(irq) debug("unprocess irq %d", irq);
+
     set_interrupt_el1(1);
     task_run();
 }
@@ -152,7 +156,16 @@ void el_spel0_error(){
 }
 
 void el_spelx_sync(){
-    debug("");
+    set_interrupt_el1(0);
+    static int cnt = 0;
+    cnt ++;
+    if(cnt > 3) while(1) asm volatile("nop");
+    unsigned long long irq = *(unsigned long long *)CORE0_IRQ_SRC;
+    debug("irq: %l", irq);
+    debug("time: %l", *(unsigned long long *)CORE0_TIMER_CNT);
+    debug("mailbox: %l", *(unsigned long long *)CORE0_MAILBOX_CNT);
+    *(unsigned long long *)CORE0_IRQ_SRC = 0;
+    set_interrupt_el1(1);
 }
 
 void el_spelx_fiq(){

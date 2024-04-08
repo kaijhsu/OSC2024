@@ -18,6 +18,8 @@
 #define LOCAL_TIMER_IRQ		(1 << 11)
 
 // QA7 Page 16. 
+#define CORE0_TIMER_CNT     0x40000040
+#define CORE0_MAILBOX_CNT   0x40000050
 #define CORE0_IRQ_SRC       0x40000060
 #define SYSTEM_TIMER_IRQ_0	(1 << 0)
 #define SYSTEM_TIMER_IRQ_1	(1 << 1)
