@@ -30,7 +30,7 @@ int mailbox_call(unsigned char channel){
 }
 
 int get_arm_memory(unsigned int *base_addr, unsigned int *mem_size){
-    mailbox[0] = 7 * 4;
+    mailbox[0] = 8 * 4;
     mailbox[1] = MAILBOX_REQUEST;
     mailbox[2] = MAILBOX_TAG_GETARMMEM;
     mailbox[3] = 8;

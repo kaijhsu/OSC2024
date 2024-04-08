@@ -28,16 +28,17 @@ int read(int argc, char *argv[]){
 
 int write(int argc, char *argv[]){
     if(argc < 3){
-        uart_printf("Usage: w <addr> <value>");
+        uart_printf("Usage: w <addr> <bytes>");
         return -1;
     }
-    int *addr = (void *)(long)m_htoi(argv[1]);
-    int value = m_htoi(argv[2]);
-    *addr = value;
-    uart_send_hex((unsigned int *)&addr);
-    uart_printf(" ");
-    uart_send_hex((unsigned int *)addr);
-    uart_printf("\n");
+    char *addr = (void *)(long)m_htoi(argv[1]);
+    int bytes = m_atoi(argv[2]);
+    unsigned int check_sum = 0;
+    for(int i=0; i<bytes; ++i){
+        addr[i] = uart_recv_raw();
+        check_sum += addr[i];
+    }
+    uart_printf("%s %s %s %d\n", argv[0], argv[1], argv[2], check_sum);
     return 0;
 }
 
@@ -55,6 +56,28 @@ int check(int argc, char *argv[]){
     uart_printf("devicetree_addr: ");
     uart_send_hex(&devicetree_addr);
     uart_printf("\n");
+    return 0;
+}
+
+void set(long addr, unsigned int value) {
+    volatile unsigned int* point = (unsigned int*)addr;
+    *point = value;
+}
+
+void reset(int tick) {
+    uart_printf("reboot after %d ticks\n", tick);
+    set(PM_RSTC, PM_PASSWORD | 0x20);  // full reset
+    set(PM_WDOG, PM_PASSWORD | tick);  // number of watchdog tick
+}
+
+void cancel_reset() {
+    uart_printf("cancel reboot \n");
+    set(PM_RSTC, PM_PASSWORD | 0);  // full reset
+    set(PM_WDOG, PM_PASSWORD | 0);  // number of watchdog tick
+}
+
+
+int reboot(int argc, char *argv[]){
     return 0;
 }
 
@@ -100,12 +123,16 @@ int shell_loop(){
                 jump(argc, argv);
             else if(0 == m_strcmp(argv[0], "check"))
                 check(argc, argv);
+            else if(0 == m_strcmp(argv[0], "reboot"))
+                reboot(argc, argv);
             else if(0 == m_strcmp(argv[0], "help"))
                 uart_printf("help:  print help menu\n"
                             "hello: print Hello World!\n"
-                            "w: write <addr> <value>\n"
+                            "reboot: reboot\n"
                             "jump:  jump to <addr>\n"
-                            "r: read <addr>\n");
+                            "w: write <addr> <bytes>\n"
+                            "r: read <addr>\n"
+                            );
             else
                 uart_printf("Unknown command: %s\n", argv[0]);
         }   

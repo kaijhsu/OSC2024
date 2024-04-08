@@ -42,7 +42,7 @@ bootloader.img: $(SRC_DIR)/linker.ld $(OBJ_FILES)
 # Script section ----------------------------------------------------------------------------
 
 SESSION="QEMU"
-QEMU_CMD="qemu-system-aarch64 -M raspi3b -kernel bootloader.img -dtb bcm2710-rpi-3-b-plus.dtb  -display none -serial null -serial stdio -S -s"
+QEMU_CMD="qemu-system-aarch64 -M raspi3b -kernel bootloader.img -initrd ../initramfs.cpio -dtb bcm2710-rpi-3-b-plus.dtb  -display none -serial null -serial pty -S -s"
 GDB_CMD="gdb-multiarch"
 
 .PHONY: dump
@@ -52,7 +52,7 @@ dump:
 
 .PHONY: run
 run: all
-	qemu-system-aarch64 -M raspi3b -kernel bootloader.img -dtb bcm2710-rpi-3-b-plus.dtb -display none -serial null -serial stdio -s
+	qemu-system-aarch64 -M raspi3b -kernel bootloader.img -initrd ../initramfs.cpio -dtb bcm2710-rpi-3-b-plus.dtb -display none -serial null -serial pty -s
 
 .PHONY: debug
 debug:

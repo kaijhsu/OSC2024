@@ -19,6 +19,7 @@ def main():
     # read kernel file
     with open(args.file, "rb") as file:
         bytecodes = file.read()
+    
     # Describe kernel size
     size = os.path.getsize(args.file)
     print(f"File {args.file}: {size} bytes")
@@ -30,53 +31,33 @@ def main():
         print("Serial Error!")
         exit(1)
     
-    port.write(b'help\n')
+    port.write(b'reboot\n')
     text = port.read_until(b'$ ').decode(encoding='ascii')
 
     start_time = time.time()
-    for i in range(0, len(bytecodes), 4):
+    chunk_size = 2048
+    for i in range(0, len(bytecodes), chunk_size):
         while True:
             addr = hex(int("0x80000", 16)+i)
-            value = bytecodes[i:i+4][::-1].hex() 
-            port.write(f'w {addr} {value}\n'.encode('ascii'))
+            byte = min(len(bytecodes)-i, chunk_size)
+            port.write(f'w {addr} {byte}\n'.encode('ascii'))
+            # print(f'w {addr} {byte}\n')
+            port.write(bytecodes[i:i+byte])
             port.flush()
-            text = port.read_until(b'$ ').decode(encoding='ascii')
-            text = text.split("\n")[0].split(" ")
-            ret_addr = text[1]
-            ret_value = text[2]
-            left_icons = round(10*i/len(bytecodes))
-            right_icons = 10 - left_icons
-            
-
-            if i % 100 == 0:
-                print(f"{addr} {value: <8} {i: >6}/{len(bytecodes)}", end="")
-                print(f" progress: {'🌌'*left_icons}{'🌠' if right_icons > 0 else '🌟'}{'⬛'*right_icons}", end="\n")
-                print('\033[F', end="")
-            if ret_addr == addr and ret_value == value:
+            check_sum = sum(bytecodes[i:i+byte])
+            text = port.read_until(b'$ ').decode().split()
+            if check_sum == int(text[6]):
                 break
-            print("Error")
+            print(f"{addr} transmit error!")
+        left_icons = round(10*i/len(bytecodes))
+        right_icons = 10 - left_icons
+        print(f"{addr} {i: >6}/{len(bytecodes)}", end="")
+        print(f" progress: {'🌌'*left_icons}{'🌠' if right_icons > 0 else '🌟'}{'⬛'*right_icons}", end="\n")
+        print('\033[F', end="")
 
     print(f"\nFinish after {time.time() - start_time} sec!")
     port.write(f'jump 0x80000\n'.encode('ascii'))
     port.flush()
-        
-
-    # # Start trasfering kernel
-    # while not port.writable():
-    #     pass
-    # port.write(size.to_bytes(4, byteorder='big'))
-    # port.flush()
-    
-    # chunk_size = 1
-    # chunk_cnts = math.ceil(size/chunk_size)
-    # for i in tqdm(range(chunk_cnts), f"Transfering bytes"):
-    # # for i in range(chunk_cnts):
-    #     while not port.writable():
-    #         pass
-    #     port.write(bytecodes[i*chunk_size: (i+1)*chunk_size])
-    #     port.flush()
-    #     time.sleep(0.001)
-        
 
 if __name__ == "__main__":
     main()
